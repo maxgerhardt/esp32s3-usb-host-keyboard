@@ -386,7 +386,7 @@ void hid_host_device_event(hid_host_device_handle_t hid_device_handle,
 
 
   switch (event) {
-  case HID_HOST_DRIVER_EVENT_CONNECTED:
+  case HID_HOST_DRIVER_EVENT_CONNECTED: {
     ESP_LOGI(TAG, "HID Device, protocol '%s' CONNECTED",
              hid_proto_name_str[dev_params.proto]);
 
@@ -399,6 +399,19 @@ void hid_host_device_event(hid_host_device_handle_t hid_device_handle,
       }
     }
     ESP_ERROR_CHECK(hid_host_device_start(hid_device_handle));
+      if (dev_params.proto == HID_PROTOCOL_KEYBOARD) {
+          ESP_LOGI(TAG, "Keyboard connected, turning on numpad LED");
+          uint8_t led = 1;  // NumLock ON
+          esp_err_t err = hid_class_request_set_report(
+              hid_device_handle,
+              HID_REPORT_TYPE_OUTPUT,
+              0,
+              &led,
+              sizeof(led)
+          );
+          ESP_LOGI(TAG, "SET_REPORT returned %s", esp_err_to_name(err));
+      }
+    }
     break;
   default:
     break;
